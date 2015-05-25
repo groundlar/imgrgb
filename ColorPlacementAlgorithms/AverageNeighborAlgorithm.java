@@ -1,4 +1,7 @@
-package com.company;
+package com.company.ColorPlacementAlgorithms;
+
+import com.company.*;
+import com.company.ColorPlacementAlgorithms.Algorithm;
 
 import java.awt.*;
 import java.util.*;
@@ -7,26 +10,7 @@ import java.util.*;
  * Created by sky on 5/21/15.
  */
 public class AverageNeighborAlgorithm extends Algorithm {
-    final int blockSizeLog2 = 2;
-    final int blockSize     = 1 << blockSizeLog2;
-    final int blockOffset   = 8 - blockSizeLog2;
-    final int blockMask     = blockSize - 1;
-
-    int arrayDim = blockSize*blockSize*blockSize;
-    ArrayList<Pixel>[] pixelBlocks = new ArrayList[arrayDim];
-
-    boolean[] pixelBlocksVisited = new boolean[arrayDim];
-
-    final int rOffset = blockSize * blockSize;
-    final int gOffset = blockSize;
-    final int bOffset = 1;
-
-    boolean addedFirst = false;
-
-    @Override
-    public int count() {
-        return 0;
-    }
+    final static boolean NEG_WEIGHTING = true;
 
     @Override
     public String getName() {
@@ -34,44 +18,11 @@ public class AverageNeighborAlgorithm extends Algorithm {
     }
 
     @Override
-    public void init(int width, int height){
-        for (int r = 0; r < blockSize; r++) {
-            for (int g = 0; g < blockSize; g++) {
-                for (int b = 0; b < blockSize; b++) {
-                    pixelBlocks[r * blockSize*blockSize +
-                                g * blockSize +
-                                b] = new ArrayList<Pixel>();
-                }
-            }
-        }
-    }
-
-    @Override
-    public void place(Color c) throws Exception {
-        // find next coordinates in image
-        Pixel p;
-        if (!addedFirst) {
-            addedFirst = true;
-            // FIXME java is pass by value...
-            p = Main.Image[Main.START_Y * Main.WIDTH + Main.START_X];
-        } else {
-            p = placeImpl(c);
-        }
-
-        assert(p.isEmpty);
-        p.isEmpty = false;
-        p.color = c;
-
-        changeQueue(p);
-    }
-
-
-    @Override
     protected Pixel placeImpl(Color c) throws Exception {
         // Queue
         Queue<Integer> st = new ArrayDeque<Integer>();
         // Stack
-        Stack<Integer> undoStack = new DequeStack<>();
+        com.company.Stack<Integer> undoStack = new DequeStack<>();
 
         int bestDiff = Integer.MAX_VALUE;
         Pixel bestPixel = null;
@@ -117,26 +68,24 @@ public class AverageNeighborAlgorithm extends Algorithm {
                                   (b << blockOffset) + blockMask);
 
             int closestR = (c.getRed() < min.getRed()) ?
-                            min.getRed() :
-                                (c.getRed() > max.getRed() ?
-                                    max.getRed() : c.getRed());
+                        min.getRed() :
+                            (c.getRed() > max.getRed() ?
+                                max.getRed() : c.getRed());
             int closestG = (c.getGreen() < min.getGreen()) ?
-                    min.getGreen() :
-                    (c.getGreen() > max.getGreen() ?
-                            max.getGreen() : c.getGreen());
+                        min.getGreen() :
+                            (c.getGreen() > max.getGreen() ?
+                                max.getGreen() : c.getGreen());
             int closestB = (c.getBlue() < min.getBlue()) ?
-                    min.getBlue() :
-                    (c.getBlue() > max.getBlue() ?
-                            max.getBlue() : c.getBlue());
+                        min.getBlue() :
+                            (c.getBlue() > max.getBlue() ?
+                                max.getBlue() : c.getBlue());
 
             Color closest = new Color(closestR, closestG, closestB);
 
             int dr = closest.getRed() - c.getRed();
             int dg = closest.getGreen() - c.getGreen();
             int db = closest.getBlue() - c.getBlue();
-//            int diff = Math.abs(dr*dr*dr*dr + dg*dg*dg*dg + db*db*db*db);
             int diff = Math.abs(dr) + Math.abs(dg) + Math.abs(db);
-//            diff = Math.max(Math.abs(rDist), Math.max(Math.abs(gDist), Math.abs(bDist)));
 
             if (diff > bestDiff) continue;
 
@@ -183,8 +132,7 @@ public class AverageNeighborAlgorithm extends Algorithm {
                 int gDist    = avg.getGreen() - c.getGreen();
                 int bDist    = avg.getBlue() - c.getBlue();
                 diff = Math.abs(rDist) + Math.abs(gDist) + Math.abs(bDist);
-//                diff = Math.abs(rDist*rDist*rDist*rDist + gDist*gDist*gDist*gDist + bDist*bDist*bDist*bDist);
-//                diff = Math.max(Math.abs(rDist), Math.max(Math.abs(gDist), Math.abs(bDist)));
+                if (NEG_WEIGHTING){ diff /= p.nonEmptyNeigh;}
 
                 if (diff < bestDiff || (diff == bestDiff && p.weight < bestPixel.weight)){
                     bestDiff  = diff;
@@ -230,35 +178,24 @@ public class AverageNeighborAlgorithm extends Algorithm {
 
                 np.nonEmptyNeigh++;
 
-                r /= n;
-                g /= n;
-                b /= n;
+                r /= n; g /= n; b /= n;
 
                 Color avg = new Color(r, g, b);
+                Color newBlock = new Color(r >> blockOffset & blockMask, g >> blockOffset & blockMask, b >> blockOffset & blockMask);
 
-                Color newBlock = new Color(r >> blockOffset & blockMask,
-                                           g >> blockOffset & blockMask,
-                                           b >> blockOffset & blockMask);
-                int blockIndex = newBlock.getRed() * rOffset +
-                                 newBlock.getGreen() * gOffset +
-                                 newBlock.getBlue() * bOffset;
+                int blockIndex = newBlock.getRed() * rOffset + newBlock.getGreen() * gOffset + newBlock.getBlue() * bOffset;
 
                 if (!np.inQueue) {
                     np.block   = blockIndex;
                     np.inQueue = true;
                     pixelBlocks[blockIndex].add(np);
                 } else if (blockIndex != np.block) {
-                    if (!pixelBlocks[np.block].remove(np)) {
-                        System.out.println("Couldn't remove pixel " + np + ", even though it should be in block " + blockIndex + " !");
-                    }
-
+                    if (!pixelBlocks[np.block].remove(np)) { System.out.println("Couldn't remove pixel " + np + ", even though it should be in block " + blockIndex + " !"); }
                     np.inQueue = true;
                     np.block = blockIndex;
                     pixelBlocks[blockIndex].add(np);
                 }
-
                 np.avg = avg;
-
             }
         }
     }

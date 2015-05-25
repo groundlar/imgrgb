@@ -1,4 +1,6 @@
-package com.company;
+package com.company.Sorters;
+
+import com.company.Sorters.Comparer;
 
 import java.awt.*;
 

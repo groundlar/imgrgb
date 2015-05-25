@@ -1,4 +1,4 @@
-package com.company;
+package com.company.Sorters;
 
 import java.awt.*;
 

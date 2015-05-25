@@ -1,5 +1,8 @@
 package com.company;
 
+import com.company.ColorPlacementAlgorithms.*;
+import com.company.Sorters.*;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -16,19 +19,29 @@ public class Main {
      */
     final static int NUM_COLORS = 64;
     final static int MAX_COLORS = 256;
-    final static int WIDTH  = 512;
+    public final static int WIDTH  = 512;
     final static int HEIGHT = 512;
     // Starting coordinates for first pixel
-    final static int START_X = WIDTH / 6 - 1;
-    final static int START_Y = HEIGHT / 6 - 1;
-    final static int SEED = 200;
-    static Pixel[] Image;
+    public final static int START_X = WIDTH / 2 - 1;
+    public final static int START_Y = HEIGHT / 2 - 1;
+    final static int SEED = 109103113;//new Random().nextInt();
+
+    private static NeighborDistanceAlgorithm.neighborMetric ngbhrMetric =
+            NeighborDistanceAlgorithm.neighborMetric.MIN;
+    private static AlgorithmFactory.distanceMetric dist =
+            AlgorithmFactory.distanceMetric.sumRGBDist;
+    private static NeighborPreference ngbhrPref =
+            new NeighborPreference(1, -2, NeighborPreference.preferenceKind.MULTIPLICATIVE);
+
+    /*** End configuration parameters ***/
+
+    public static Pixel[] Image;
     static Random rand = new Random(SEED);
     private static final int[] NEIGH_X = {-1, 0, 1, -1, 1, -1, 0, 1};
     private static final int[] NEIGH_Y = {-1, -1, -1, 0, 0, 1, 1, 1};
-    private static Algorithm ALGORITHM = new AverageNeighborAlgorithm();
-//    private static Comparer SORTER = new ColorComparator("gbr");
-    private static Comparer SORTER = new HueComparator();
+
+    private static Algorithm ALGORITHM = AlgorithmFactory.getAlgorithm(dist, ngbhrMetric, ngbhrPref);
+    private static Comparer SORTER = new BrightnessComparator();
 
     public static void main(String[] args) {
         // TODO cmd-line args
@@ -100,9 +113,7 @@ public class Main {
         System.out.println("Assigning colors...");
         for (int i = 0; i < colors.length; i++) {
             if (i % (32*4096) == 0) {
-                System.out.println(((double) i) / WIDTH / HEIGHT +
-                        " / " +
-                        ALGORITHM.count());
+                System.out.println(((double) i * 100.0) / (WIDTH * HEIGHT) + "%...");
             }
 
             try {
@@ -114,6 +125,7 @@ public class Main {
         }
 
         ALGORITHM.done();
+
         System.out.println("Verifying colors used...");
         boolean[] used = new boolean[MAX_COLORS*MAX_COLORS*MAX_COLORS];
         for (int y = 0; y < HEIGHT; y++) {
@@ -151,7 +163,7 @@ public class Main {
                                        ALGORITHM.getName() + "_" +
                                        SORTER.getName() + "_" +
                                        START_X + "-" + START_Y +
-                                       "s" + SEED + ".png");
+                                       "s" + SEED + "-negwght.png");
             ImageIO.write(img, "png", outputFile);
         } catch (IOException e) {
             e.printStackTrace();

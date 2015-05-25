@@ -1,34 +1,16 @@
-package com.company;
+package com.company.ColorPlacementAlgorithms;
 
-        import com.sun.jmx.remote.internal.ArrayQueue;
+import com.company.*;
+import com.company.ColorPlacementAlgorithms.Algorithm;
 
-        import java.awt.*;
-        import java.util.*;
+import java.awt.*;
+import java.util.*;
 
 /**
  * Created by sky on 5/21/15.
  */
 public class AverageNeighborSquareAlgorithm extends Algorithm {
-    final int blockSizeLog2 = 2;
-    final int blockSize     = 1 << blockSizeLog2;
-    final int blockOffset   = 8 - blockSizeLog2;
-    final int blockMask     = blockSize - 1;
-
-    int arrayDim = blockSize*blockSize*blockSize;
-    ArrayList<Pixel>[] pixelBlocks = new ArrayList[arrayDim];
-
-    boolean[] pixelBlocksVisited = new boolean[arrayDim];
-
-    final int rOffset = blockSize * blockSize;
-    final int gOffset = blockSize;
-    final int bOffset = 1;
-
-    boolean addedFirst = false;
-
-    @Override
-    public int count() {
-        return 0;
-    }
+    final static boolean NEG_WEIGHTING = true;
 
     @Override
     public String getName() {
@@ -36,44 +18,11 @@ public class AverageNeighborSquareAlgorithm extends Algorithm {
     }
 
     @Override
-    public void init(int width, int height){
-        for (int r = 0; r < blockSize; r++) {
-            for (int g = 0; g < blockSize; g++) {
-                for (int b = 0; b < blockSize; b++) {
-                    pixelBlocks[r * blockSize*blockSize +
-                            g * blockSize +
-                            b] = new ArrayList<Pixel>();
-                }
-            }
-        }
-    }
-
-    @Override
-    public void place(Color c) throws Exception {
-        // find next coordinates in image
-        Pixel p;
-        if (!addedFirst) {
-            addedFirst = true;
-            // FIXME java is pass by value...
-            p = Main.Image[Main.START_Y * Main.WIDTH + Main.START_X];
-        } else {
-            p = placeImpl(c);
-        }
-
-        assert(p.isEmpty);
-        p.isEmpty = false;
-        p.color = c;
-
-        changeQueue(p);
-    }
-
-
-    @Override
     protected Pixel placeImpl(Color c) throws Exception {
         // Queue
         Queue<Integer> st = new ArrayDeque<Integer>();
         // Stack
-        Stack<Integer> undoStack = new DequeStack<>();
+        com.company.Stack<Integer> undoStack = new DequeStack<>();
 
         int bestDiff = Integer.MAX_VALUE;
         Pixel bestPixel = null;
@@ -183,6 +132,9 @@ public class AverageNeighborSquareAlgorithm extends Algorithm {
                 int gDist    = avg.getGreen() - c.getGreen();
                 int bDist    = avg.getBlue() - c.getBlue();
                 diff = rDist*rDist + gDist*gDist + bDist*bDist;
+                if (NEG_WEIGHTING){
+                    diff /= p.nonEmptyNeigh;
+                }
 
                 if (diff < bestDiff || (diff == bestDiff && p.weight < bestPixel.weight)){
                     bestDiff  = diff;

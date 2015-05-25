@@ -1,77 +1,31 @@
-package com.company;
+package com.company.ColorPlacementAlgorithms;
 
-import com.sun.jmx.remote.internal.ArrayQueue;
+import com.company.*;
 
 import java.awt.*;
 import java.util.*;
+
 /**
- * Created by sky on 5/23/15.
+ * Created by sky on 5/24/15.
  */
-public class NeighborDistanceAlgorithm extends Algorithm{
+public abstract class WeightedDistPlacementAlgorithm extends Algorithm {
 
-    // Blocks for preliminary coarse color search
-    final int blockSizeLog2 = 2;
-    final int blockSize     = 1 << blockSizeLog2;
-    final int blockOffset   = 8 - blockSizeLog2;
-    final int blockMask     = blockSize - 1;
+    ColorMetric distMetric;
+    NeighborPreference neighborWeight;
 
-    int arrayDim = blockSize*blockSize*blockSize;
-    ArrayList<Pixel>[] pixelBlocks = new ArrayList[arrayDim];
-
-    boolean[] pixelBlocksVisited = new boolean[arrayDim];
-
-    final int rOffset = blockSize * blockSize;
-    final int gOffset = blockSize;
-    final int bOffset = 1;
-
-    boolean addedFirst = false;
-
-    @Override
-    public int count() { return 0; }
-
-    @Override
-    public String getName() { return "nhbrDist"; }
-
-    @Override
-    public void init(int width, int height){
-        for (int r = 0; r < blockSize; r++) {
-            for (int g = 0; g < blockSize; g++) {
-                for (int b = 0; b < blockSize; b++) {
-                    pixelBlocks[r * blockSize*blockSize +
-                            g * blockSize +
-                            b] = new ArrayList<Pixel>();
-                }
-            }
-        }
+    public WeightedDistPlacementAlgorithm(ColorMetric distMetric, NeighborPreference neighborWeight) {
+        this.distMetric = distMetric;
+        this.neighborWeight = neighborWeight;
     }
-
-    @Override
-    public void place(Color c) throws Exception {
-        // find next coordinates in image
-        Pixel p;
-        if (!addedFirst) {
-            addedFirst = true;
-            p = Main.Image[Main.START_Y * Main.WIDTH + Main.START_X];
-        } else {
-            p = placeImpl(c);
-        }
-
-        assert(p.isEmpty);
-        p.isEmpty = false;
-        p.color = c;
-
-        changeQueue(p);
-    }
-
 
     @Override
     protected Pixel placeImpl(Color c) throws Exception {
         // Queue
         Queue<Integer> st = new ArrayDeque<Integer>();
         // Stack
-        Stack<Integer> undoStack = new DequeStack<>();
+        com.company.Stack<Integer> undoStack = new DequeStack<>();
 
-        int bestDiff = Integer.MAX_VALUE;
+        double bestDiff = Double.MAX_VALUE;
         Pixel bestPixel = null;
         int bestBlock = -1;
 
@@ -129,11 +83,7 @@ public class NeighborDistanceAlgorithm extends Algorithm{
 
             Color closest = new Color(closestR, closestG, closestB);
 
-            int dr = closest.getRed() - c.getRed();
-            int dg = closest.getGreen() - c.getGreen();
-            int db = closest.getBlue() - c.getBlue();
-//            int diff = Math.abs(dr*dr*dr*dr + dg*dg*dg*dg + db*db*db*db);
-            int diff = Math.max(Math.abs(dr), Math.max(Math.abs(dg), Math.abs(db)));
+            double diff = this.distMetric.dist(closest, c);
 
             if (diff > bestDiff) continue;
 
@@ -176,11 +126,9 @@ public class NeighborDistanceAlgorithm extends Algorithm{
             ArrayList<Pixel> pxl = pixelBlocks[coord];
             for (Pixel p : pxl){
                 Color avg = p.avg;
-                int rDist    = avg.getRed() - c.getRed();
-                int gDist    = avg.getGreen() - c.getGreen();
-                int bDist    = avg.getBlue() - c.getBlue();
-                diff = Math.max(Math.abs(rDist), Math.max(Math.abs(gDist), Math.abs(bDist)));
-//                diff = Math.abs(rDist*rDist*rDist*rDist + gDist*gDist*gDist*gDist + bDist*bDist*bDist*bDist);
+                diff = this.distMetric.dist(avg, c);
+
+                diff = this.neighborWeight.calculate(diff, p.nonEmptyNeigh);
 
                 if (diff < bestDiff || (diff == bestDiff && p.weight < bestPixel.weight)){
                     bestDiff  = diff;
@@ -196,7 +144,7 @@ public class NeighborDistanceAlgorithm extends Algorithm{
             pixelBlocksVisited[coord] = false;
         }
 
-        if (bestDiff == Integer.MAX_VALUE){
+        if (bestDiff == Double.MAX_VALUE){
             throw new Exception("No possible positions!");
         }
 
@@ -209,53 +157,4 @@ public class NeighborDistanceAlgorithm extends Algorithm{
         return bestPixel;
     }
 
-    @Override
-    protected void changeQueue(Pixel p) {
-        // recalculate neighbors
-        for (Pixel np : p.neighbors) {
-            if (np.isEmpty){
-                int r = 0, g = 0, b = 0, n = 0;
-                for (Pixel nnp : np.neighbors) {
-                    if (!nnp.isEmpty){
-                        r += nnp.color.getRed();
-                        g += nnp.color.getGreen();
-                        b += nnp.color.getBlue();
-                        n++;
-                    }
-                }
-
-                np.nonEmptyNeigh++;
-
-                r /= n;
-                g /= n;
-                b /= n;
-
-                Color avg = new Color(r, g, b);
-
-                Color newBlock = new Color(r >> blockOffset & blockMask,
-                        g >> blockOffset & blockMask,
-                        b >> blockOffset & blockMask);
-                int blockIndex = newBlock.getRed() * rOffset +
-                        newBlock.getGreen() * gOffset +
-                        newBlock.getBlue() * bOffset;
-
-                if (!np.inQueue) {
-                    np.block   = blockIndex;
-                    np.inQueue = true;
-                    pixelBlocks[blockIndex].add(np);
-                } else if (blockIndex != np.block) {
-                    if (!pixelBlocks[np.block].remove(np)) {
-                        System.out.println("Couldn't remove pixel " + np + ", even though it should be in block " + blockIndex + " !");
-                    }
-
-                    np.inQueue = true;
-                    np.block = blockIndex;
-                    pixelBlocks[blockIndex].add(np);
-                }
-
-                np.avg = avg;
-
-            }
-        }
-    }
 }

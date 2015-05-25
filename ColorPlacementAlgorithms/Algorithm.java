@@ -5,6 +5,7 @@ import com.company.Pixel;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by sky on 5/21/15.
@@ -12,6 +13,7 @@ import java.util.ArrayList;
  */
 public abstract class Algorithm {
     // Blocks for preliminary coarse color search
+    static Random rand = new Random(Main.SEED);
     final int blockSizeLog2 = 2;
     final int blockSize     = 1 << blockSizeLog2;
     final int blockOffset   = 8 - blockSizeLog2;

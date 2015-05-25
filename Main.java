@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.*;
 
 public class Main {
@@ -17,18 +18,24 @@ public class Main {
      *  128 : 2048 x 1024
      *  64 : 512 x 512
      */
-    final static int NUM_COLORS = 64;
+    final static int NUM_COLORS = 128;
     final static int MAX_COLORS = 256;
-    public final static int WIDTH  = 512;
-    final static int HEIGHT = 512;
+    public final static int WIDTH  = 2048;
+    public final static int HEIGHT = 1024;
     // Starting coordinates for first pixel
     public final static int START_X = WIDTH / 2 - 1;
     public final static int START_Y = HEIGHT / 2 - 1;
-    final static int SEED = 109103113;//new Random().nextInt();
-    private static ColorMetric algoMetric = new
-            ColorDistanceMetrics.sumSqHSBDist();
 
-    private static Comparer SORTER = new BrightnessComparator();
+    public final static int SEED = 200;//new Random().nextInt();
+
+    private static ColorMetric algoMetric = new
+            ColorDistanceMetrics.sumSqRGBDist();
+
+    private final static String WEIGHTING_NAME = "-LnQd";
+
+    private final static int NUM_FRAMES = 200;
+
+    private static Comparer SORTER = new ColorComparator("rgb");
 
     /*
     private static NeighborDistanceAlgorithm.neighborMetric ngbhrMetric =
@@ -49,7 +56,63 @@ public class Main {
 
     private static Algorithm ALGORITHM = new GenericAlgorithm(algoMetric);
 
-    public static void main(String[] args) {
+    static BufferedImage exportImg(Pixel[] Image, BufferedImage img){
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                Color rgb = Image[y * WIDTH + x].color;
+                if (rgb == null) {
+                    rgb = Color.black;
+                }
+                img.setRGB(x, y, rgb.getRGB());
+            }
+        }
+        return img;
+    }
+
+    public static void saveImgToFile(BufferedImage img, String suffix) {
+        saveImgToFile(img, suffix, false);
+    }
+
+    public static String getFileBasename(){
+        return "imgrgb_" + ALGORITHM.getName() +
+                "_" + SORTER.getName() + "_" +
+                START_X + "x" + START_Y +
+                "s" + SEED + WEIGHTING_NAME + "/";
+
+    }
+
+    private static boolean makeDirectory(String dirPath){
+        File file = new File(dirPath);
+        if (file.mkdir()) {
+            return true;
+        }
+        else {
+            System.err.println("Failed to create directory!");
+            return false;
+        }
+    }
+
+    public static String getOutputDirectory(){
+        String basename = getFileBasename();
+        return "/home/sky/Desktop/" + basename + "/";
+    }
+
+    public static String getOutputFilename(String suffix){
+        return getOutputDirectory() + "img-" + suffix + ".png";
+    }
+
+    public static void saveImgToFile(BufferedImage img,
+                                     String filename, boolean verbose) {
+        try {
+            File outputFile = new File(filename);
+            ImageIO.write(img, "png", outputFile);
+            if (verbose) System.out.println("Wrote to <" + outputFile + ">");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) throws FileAlreadyExistsException {
         // TODO cmd-line args
 
         System.out.println("Generating Colors...");
@@ -116,6 +179,21 @@ public class Main {
         System.out.println("Initializing algorithm...");
         ALGORITHM.init(WIDTH, HEIGHT);
 
+        BufferedImage img = new BufferedImage(WIDTH, HEIGHT,
+                BufferedImage.TYPE_INT_RGB);
+
+        long[] checkpoints = new long[NUM_FRAMES];
+        int checkpointIndex = 0;
+        for (int i = 0; i < NUM_FRAMES; i++) {
+            checkpoints[i] = (((long)(i+1)) * colors.length / NUM_FRAMES);
+        }
+        System.out.println("Assigning colors...");
+
+        System.out.println("Creating output directory...");
+        if (!makeDirectory(getOutputDirectory())) {
+            throw new FileAlreadyExistsException(getOutputDirectory());
+        }
+
         System.out.println("Assigning colors...");
         for (int i = 0; i < colors.length; i++) {
             if (i % (32*4096) == 0) {
@@ -128,9 +206,18 @@ public class Main {
                 e.printStackTrace();
             }
 //            if ((float) i / colors.length >= .95) { break;}
+            if (i == checkpoints[checkpointIndex]) {
+                img = exportImg(Image, img);
+                saveImgToFile(img,
+                        getOutputFilename(
+                                String.format("%05d",
+                                        checkpointIndex)));
+                checkpointIndex++;
+            }
         }
 
         ALGORITHM.done();
+
 
         System.out.println("Verifying colors used...");
         boolean[] used = new boolean[MAX_COLORS*MAX_COLORS*MAX_COLORS];
@@ -155,24 +242,8 @@ public class Main {
             }
         }
 
-        BufferedImage img = new BufferedImage(WIDTH, HEIGHT,
-                                    BufferedImage.TYPE_INT_RGB);
-        for (int x = 0; x < WIDTH; x++){
-            for (int y = 0; y < HEIGHT; y++){
-                Color rgb = Image[y * WIDTH + x].color;
-//                if (rgb == null) { rgb = Color.gray;}
-                img.setRGB(x, y, rgb.getRGB());
-            }
-        }
-        try {
-            File outputFile = new File("/home/sky/Desktop/imgrgb_" +
-                                       ALGORITHM.getName() + "_" +
-                                       SORTER.getName() + "_" +
-                                       START_X + "x" + START_Y +
-                                       "s" + SEED + ".png");
-            ImageIO.write(img, "png", outputFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        img = exportImg(Image, img);
+        saveImgToFile(img, getOutputFilename("final"), true);
     }
 }

@@ -60,6 +60,55 @@ public final class ColorDistanceMetrics {
 
 
     /**
+     * Chebychev distance between two color vectors.
+     */
+    public static class HSBChebychev extends ColorMetric {
+        double dist(Color c1, Color c2) {
+            float max = 0;
+            for (float val : getHSBDists(c1, c2)) {
+                if (val > max) max = val;
+            }
+            return max;
+        }
+    }
+
+    /**
+     * Square of the cosine distance between the two RGB vectors.
+     */
+    public static class cosineSqHSBDist extends ColorMetric {
+        double dist(Color c1, Color c2) {
+
+            float[] hsb1 = new float[3];
+            float[] hsb2 = new float[3];
+
+            int r1 = c1.getRed();
+            int r2 = c2.getRed();
+            int g1 = c1.getGreen();
+            int g2 = c2.getGreen();
+            int B1 = c1.getBlue();
+            int B2 = c2.getBlue();
+
+            Color.RGBtoHSB(r1, B1, g1, hsb1);
+            Color.RGBtoHSB(r2, B2, g2, hsb2);
+
+            float h1 = hsb1[0]*255;
+            float h2 = hsb2[0]*255;
+            float s1 = hsb1[1]*255;
+            float s2 = hsb2[1]*255;
+            float b1 = hsb1[2]*255;
+            float b2 = hsb2[2]*255;
+
+            float denom = (h1 * h1 + s1 * s1 + b1 * b1) * (h2 * h2 + s2 * s2 + b2 * b2);
+            float numer = Math.abs(h1 * h2) + Math.abs(s1 * s2) + Math.abs(b1 * b2);
+            numer *= numer;
+
+            return (numer / denom);
+        }
+    }
+
+
+
+    /**
      * "Flawed" metric taking the absolute value post-summation.
      */
     public static class sumRGBDist extends ColorMetric {

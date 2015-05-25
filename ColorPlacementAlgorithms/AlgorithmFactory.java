@@ -7,6 +7,7 @@ import com.company.ColorPlacementAlgorithms.Algorithm;
  */
 public class AlgorithmFactory {
     public enum distanceMetric {RGBChebychev, cosineSqRGBDist,
+        HSBChebychev, cosineSqHSBDist,
         sumRGBDist, sumSqRGBDist, sumCubeRGBDist, sumQrtRGBDist,
         sumHSBDist, sumSqHSBDist, sumCubeHSBDist, sumQrtHSBDist};
 
@@ -23,6 +24,13 @@ public class AlgorithmFactory {
                 break;
             case cosineSqRGBDist:
                 distMetric = new ColorDistanceMetrics.cosineSqRGBDist();
+                break;
+
+            case HSBChebychev:
+                distMetric = new ColorDistanceMetrics.HSBChebychev();
+                break;
+            case cosineSqHSBDist:
+                distMetric = new ColorDistanceMetrics.cosineSqHSBDist();
                 break;
 
             case sumRGBDist:

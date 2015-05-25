@@ -1,6 +1,7 @@
 package com.company.Sorters;
 
 import java.awt.*;
+import java.util.HashMap;
 
 /**
  * Created by sky on 5/23/15.
@@ -54,7 +55,13 @@ public class ColorComparator implements Comparer<Color> {
     }
 
     public String getName() {
-        return "colorComp" + first + "_" + second + "_" + third ;
+        HashMap<Integer, String> nameMap = new HashMap<>();
+        nameMap.put(0, "R");
+        nameMap.put(1, "G");
+        nameMap.put(2, "B");
+        return "colorComp" + nameMap.get(first) + "_" +
+                nameMap.get(second) + "_" +
+                nameMap.get(third);
     }
 
     @Override

@@ -142,7 +142,7 @@ public class GenericAlgorithm extends Algorithm {
                 diff = (int)distFunction.dist(avg, c);
 
                 if (NEG_WEIGHTING){
-                    diff -= p.nonEmptyNeigh/2;
+                    diff -= p.nonEmptyNeigh*p.nonEmptyNeigh;
                 }
 
                 // This has to wait on lambda functions, I can't come up with a fast enough method otherwise

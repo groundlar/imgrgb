@@ -41,7 +41,7 @@ public final class ColorDistanceMetrics {
     /**
      * Square of the cosine distance between the two RGB vectors.
      */
-    static class cosineSqRGBDist extends ColorMetric {
+    public static class cosineSqRGBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float r1 = c1.getRed();
             float r2 = c2.getRed();

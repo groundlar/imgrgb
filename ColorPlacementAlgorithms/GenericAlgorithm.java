@@ -1,7 +1,6 @@
 package com.company.ColorPlacementAlgorithms;
 
 import com.company.*;
-import com.company.ColorPlacementAlgorithms.Algorithm;
 
 import java.awt.*;
 import java.util.*;
@@ -9,13 +8,19 @@ import java.util.*;
 /**
  * Created by sky on 5/21/15.
  */
-public class AverageNeighborSquareAlgorithm extends Algorithm {
+public class GenericAlgorithm extends Algorithm {
     final static boolean NEG_WEIGHTING = true;
+
+    ColorMetric distFunction; //= new ColorDistanceMetrics.cosineSqRGBDist();
+    NeighborPreference pref;
+
+    public GenericAlgorithm(ColorMetric metric, NeighborPreference pref) {
+        this.distFunction = metric;
+    }
 
     @Override
     public String getName() {
-//        return "avgSqNhbr";
-        return "cosine";
+        return distFunction.getName() + "-" + pref.getName();
     }
 
     @Override
@@ -87,7 +92,7 @@ public class AverageNeighborSquareAlgorithm extends Algorithm {
             int dg = closest.getGreen() - c.getGreen();
             int db = closest.getBlue() - c.getBlue();
 //            int diff = dr * dr + dg * dg + db * db;
-            int diff = (int)new ColorDistanceMetrics.cosineSqRGBDist().dist(closest, c);
+            int diff = (int)distFunction.dist(closest, c);
 
             if (diff > bestDiff) continue;
 
@@ -133,7 +138,7 @@ public class AverageNeighborSquareAlgorithm extends Algorithm {
                 int rDist    = avg.getRed() - c.getRed();
                 int gDist    = avg.getGreen() - c.getGreen();
                 int bDist    = avg.getBlue() - c.getBlue();
-                diff = (int)new ColorDistanceMetrics.cosineSqRGBDist().dist(avg, c);
+                diff = (int)distFunction.dist(avg, c);
 //                diff = rDist*rDist + gDist*gDist + bDist*bDist;
                 if (NEG_WEIGHTING){
                     diff -= p.nonEmptyNeigh/2;
@@ -216,3 +221,4 @@ public class AverageNeighborSquareAlgorithm extends Algorithm {
         }
     }
 }
+

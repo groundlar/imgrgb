@@ -12,6 +12,20 @@ public class NeighborPreference {
     float expon;
     preferenceKind kind;
 
+    public String getName() {
+        String ret = "";
+        switch (kind){
+            case LINEAR:
+                ret += "lin";
+                break;
+            case MULTIPLICATIVE:
+                ret += "mult";
+                break;
+            default:
+        }
+        ret = coeff + ret + expon;
+        return ret;
+    }
 
     public NeighborPreference(float coeff, float expon, preferenceKind kind) {
         this.coeff = coeff;

@@ -26,10 +26,15 @@ public class Main {
     public final static int START_Y = HEIGHT / 2 - 1;
     final static int SEED = 109103113;//new Random().nextInt();
 
+    private static Comparer SORTER = new BrightnessComparator();
+
+    /*
     private static NeighborDistanceAlgorithm.neighborMetric ngbhrMetric =
             NeighborDistanceAlgorithm.neighborMetric.MIN;
     private static AlgorithmFactory.distanceMetric dist =
             AlgorithmFactory.distanceMetric.sumRGBDist;
+    private static Algorithm ALGORITHM = AlgorithmFactory.getAlgorithm(dist, ngbhrMetric, ngbhrPref);
+    */
     private static NeighborPreference ngbhrPref =
             new NeighborPreference(1, -2, NeighborPreference.preferenceKind.MULTIPLICATIVE);
 
@@ -40,8 +45,7 @@ public class Main {
     private static final int[] NEIGH_X = {-1, 0, 1, -1, 1, -1, 0, 1};
     private static final int[] NEIGH_Y = {-1, -1, -1, 0, 0, 1, 1, 1};
 
-    private static Algorithm ALGORITHM = AlgorithmFactory.getAlgorithm(dist, ngbhrMetric, ngbhrPref);
-    private static Comparer SORTER = new BrightnessComparator();
+    private static Algorithm ALGORITHM = new GenericAlgorithm(new ColorDistanceMetrics.cosineSqRGBDist(), ngbhrPref);
 
     public static void main(String[] args) {
         // TODO cmd-line args
@@ -162,8 +166,8 @@ public class Main {
             File outputFile = new File("/home/sky/Desktop/imgrgb_" +
                                        ALGORITHM.getName() + "_" +
                                        SORTER.getName() + "_" +
-                                       START_X + "-" + START_Y +
-                                       "s" + SEED + "-negwght.png");
+                                       START_X + "x" + START_Y +
+                                       "s" + SEED + ".png");
             ImageIO.write(img, "png", outputFile);
         } catch (IOException e) {
             e.printStackTrace();

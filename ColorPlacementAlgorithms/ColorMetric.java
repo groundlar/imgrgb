@@ -9,6 +9,6 @@ public abstract class ColorMetric {
         abstract double dist(Color c1, Color c2);
 
         public String getName(){
-              return this.getClass().getName();
+              return this.getClass().getSimpleName();
         }
 }

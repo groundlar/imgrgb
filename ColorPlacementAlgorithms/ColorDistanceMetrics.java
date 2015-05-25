@@ -28,7 +28,7 @@ public final class ColorDistanceMetrics {
     /**
      * Chebychev distance between two color vectors.
      */
-    static class RGBChebychev extends ColorMetric {
+    public static class RGBChebychev extends ColorMetric {
         double dist(Color c1, Color c2) {
             float max = 0;
             for (float val : getRGBDists(c1, c2)) {
@@ -62,7 +62,7 @@ public final class ColorDistanceMetrics {
     /**
      * "Flawed" metric taking the absolute value post-summation.
      */
-    static class sumRGBDist extends ColorMetric {
+    public static class sumRGBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float ret = 0;
             for (float val : getRGBDists(c1, c2)) {
@@ -72,7 +72,7 @@ public final class ColorDistanceMetrics {
         }
     }
 
-    static class sumSqRGBDist extends ColorMetric {
+    public static class sumSqRGBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float ret = 0;
             for (float val : getRGBDists(c1, c2)) {
@@ -85,7 +85,7 @@ public final class ColorDistanceMetrics {
     /**
      * "Flawed" metric taking the absolute value post-summation.
      */
-    static class sumCubeRGBDist extends ColorMetric {
+    public static class sumCubeRGBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float ret = 0;
             for (float val : getRGBDists(c1, c2)) {
@@ -95,7 +95,7 @@ public final class ColorDistanceMetrics {
         }
     }
 
-    static class sumQrtRGBDist extends ColorMetric {
+    public static class sumQrtRGBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float ret = 0;
             for (float val : getRGBDists(c1, c2)) {
@@ -110,7 +110,7 @@ public final class ColorDistanceMetrics {
     /**
      * "Flawed" metric taking the absolute value post-summation.
      */
-    static class sumHSBDist extends ColorMetric {
+    public static class sumHSBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float ret = 0;
             for (float val : getHSBDists(c1, c2)) {
@@ -120,7 +120,7 @@ public final class ColorDistanceMetrics {
         }
     }
 
-    static class sumSqHSBDist extends ColorMetric {
+    public static class sumSqHSBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float ret = 0;
             for (float val : getHSBDists(c1, c2)) {
@@ -133,7 +133,7 @@ public final class ColorDistanceMetrics {
     /**
     * "Flawed" metric taking the absolute value post-summation.
     */
-    static class sumCubeHSBDist extends ColorMetric {
+    public static class sumCubeHSBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float ret = 0;
             for (float val : getHSBDists(c1, c2)) {
@@ -143,7 +143,7 @@ public final class ColorDistanceMetrics {
         }
     }
 
-    static class sumQrtHSBDist extends ColorMetric {
+    public static class sumQrtHSBDist extends ColorMetric {
         double dist(Color c1, Color c2) {
             float ret = 0;
             for (float val : getHSBDists(c1, c2)) {

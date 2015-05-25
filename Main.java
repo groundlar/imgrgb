@@ -25,6 +25,8 @@ public class Main {
     public final static int START_X = WIDTH / 2 - 1;
     public final static int START_Y = HEIGHT / 2 - 1;
     final static int SEED = 109103113;//new Random().nextInt();
+    private static ColorMetric algoMetric = new
+            ColorDistanceMetrics.sumSqHSBDist();
 
     private static Comparer SORTER = new BrightnessComparator();
 
@@ -36,7 +38,7 @@ public class Main {
     private static Algorithm ALGORITHM = AlgorithmFactory.getAlgorithm(dist, ngbhrMetric, ngbhrPref);
     */
     private static NeighborPreference ngbhrPref =
-            new NeighborPreference(1, -2, NeighborPreference.preferenceKind.MULTIPLICATIVE);
+            new NeighborPreference(1, NeighborPreference.exponent.N_TWO, NeighborPreference.preferenceKind.MULTIPLICATIVE);
 
     /*** End configuration parameters ***/
 
@@ -45,7 +47,7 @@ public class Main {
     private static final int[] NEIGH_X = {-1, 0, 1, -1, 1, -1, 0, 1};
     private static final int[] NEIGH_Y = {-1, -1, -1, 0, 0, 1, 1, 1};
 
-    private static Algorithm ALGORITHM = new GenericAlgorithm(new ColorDistanceMetrics.cosineSqRGBDist(), ngbhrPref);
+    private static Algorithm ALGORITHM = new GenericAlgorithm(algoMetric);
 
     public static void main(String[] args) {
         // TODO cmd-line args

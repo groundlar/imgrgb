@@ -7,9 +7,11 @@ package com.company.ColorPlacementAlgorithms;
 public class NeighborPreference {
 
     public enum preferenceKind {NONE, LINEAR, MULTIPLICATIVE};
+    // limit exponent values for speed
+    public enum exponent {N_TWO, N_ONE, ZERO, ONE, TWO};
 
     float coeff;
-    float expon;
+    exponent expon;
     preferenceKind kind;
 
     public String getName() {
@@ -27,34 +29,40 @@ public class NeighborPreference {
         return ret;
     }
 
-    public NeighborPreference(float coeff, float expon, preferenceKind kind) {
+    public NeighborPreference(float coeff, exponent expon, preferenceKind kind) {
         this.coeff = coeff;
         this.expon = expon;
         this.kind = kind;
     }
 
     public double calculate(double dist, double numNeighbors){
-        double ret;
+        if (kind == preferenceKind.NONE ||
+                expon == exponent.ZERO) {
+            return dist;
+        }
+
+        double ret = dist;
         switch (this.kind) {
-            case NONE:
-                ret = dist;
-                break;
-
-
             case LINEAR:
-                numNeighbors = Math.pow(numNeighbors, coeff);
-                numNeighbors *= coeff;
-                ret = dist - numNeighbors;
+                ret = dist - coeff * numNeighbors;
                 break;
 
             case MULTIPLICATIVE:
-                numNeighbors = Math.pow(numNeighbors, coeff);
-                numNeighbors *= coeff;
-                ret = dist * numNeighbors;
+                switch (expon) {
+                    case N_ONE:
+                        ret = coeff * dist / numNeighbors;
+                        break;
+                    case N_TWO:
+                        ret = coeff * dist / (numNeighbors*numNeighbors);
+                        break;
+                    case ONE:
+                        ret = coeff * dist * numNeighbors;
+                        break;
+                    case TWO:
+                        ret = coeff * dist * (numNeighbors*numNeighbors);
+                        break;
+                }
                 break;
-
-            default:
-                ret = dist;
         }
         return ret;
     }

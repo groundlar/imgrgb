@@ -12,15 +12,16 @@ public class GenericAlgorithm extends Algorithm {
     final static boolean NEG_WEIGHTING = true;
 
     ColorMetric distFunction; //= new ColorDistanceMetrics.cosineSqRGBDist();
-    NeighborPreference pref;
+//    NeighborPreference pref;
 
-    public GenericAlgorithm(ColorMetric metric, NeighborPreference pref) {
+    public GenericAlgorithm(ColorMetric metric){//, NeighborPreference pref) {
         this.distFunction = metric;
+//        this.pref = pref;
     }
 
     @Override
     public String getName() {
-        return distFunction.getName() + "-" + pref.getName();
+        return distFunction.getName();// + "-" + pref.getName();
     }
 
     @Override
@@ -139,10 +140,18 @@ public class GenericAlgorithm extends Algorithm {
                 int gDist    = avg.getGreen() - c.getGreen();
                 int bDist    = avg.getBlue() - c.getBlue();
                 diff = (int)distFunction.dist(avg, c);
-//                diff = rDist*rDist + gDist*gDist + bDist*bDist;
+
                 if (NEG_WEIGHTING){
                     diff -= p.nonEmptyNeigh/2;
                 }
+
+                // This has to wait on lambda functions, I can't come up with a fast enough method otherwise
+//                diff = (int)pref.calculate(diff, p.nonEmptyNeigh);
+
+
+
+
+
 
                 if (diff < bestDiff || (diff == bestDiff && p.weight < bestPixel.weight)){
                     bestDiff  = diff;

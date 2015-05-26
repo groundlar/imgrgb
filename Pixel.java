@@ -30,6 +30,20 @@ public class Pixel {
     // Unique weight used for tiebreaking comparisons
     public int weight;
 
+    public int xPos;
+    public int yPos;
+
+
+    public Pixel(boolean isEmpty, boolean inQueue,
+                 int weight, int queueIndex,
+                 int x, int y) {
+        this.isEmpty = isEmpty;
+        this.inQueue = inQueue;
+        this.weight = weight;
+        this.queueIndex = queueIndex;
+        this.xPos = x;
+        this.yPos = y;
+    }
 
     public Pixel(boolean isEmpty, boolean inQueue, int weight, int queueIndex) {
         this.isEmpty = isEmpty;

@@ -18,8 +18,11 @@ public class Main {
      *  128 : 2048 x 1024
      *  64 : 512 x 512
      */
+//    final static int NUM_COLORS = 64;
     final static int NUM_COLORS = 128;
     final static int MAX_COLORS = 256;
+//    public final static int WIDTH  = 512;
+//    public final static int HEIGHT = 512;
     public final static int WIDTH  = 2048;
     public final static int HEIGHT = 1024;
     // Starting coordinates for first pixel
@@ -33,9 +36,10 @@ public class Main {
 
     private final static String WEIGHTING_NAME = "-LnQd";
 
-    private final static int NUM_FRAMES = 200;
+    private final static int NUM_FRAMES = 3;
 
-    private static Comparer SORTER = new ColorComparator("rgb");
+    //private static Comparer SORTER = new ColorComparator("gbr");
+    private static Comparer SORTER = new HueComparator();
 
     /*
     private static NeighborDistanceAlgorithm.neighborMetric ngbhrMetric =
@@ -77,7 +81,7 @@ public class Main {
         return "imgrgb_" + ALGORITHM.getName() +
                 "_" + SORTER.getName() + "_" +
                 START_X + "x" + START_Y +
-                "s" + SEED + WEIGHTING_NAME + "/";
+                "s" + SEED + WEIGHTING_NAME;
 
     }
 
@@ -147,7 +151,7 @@ public class Main {
                     weight = rand.nextInt(Integer.MAX_VALUE);
                 } while (!weights.add(weight));
 
-                Image[y*WIDTH + x] = new Pixel(true, false, weight, -1);
+                Image[y*WIDTH + x] = new Pixel(true, false, weight, -1, x, y);
             }
         }
 

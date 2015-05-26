@@ -15,11 +15,6 @@ public class ColorComparator implements Comparer<Color> {
     private int second = 1;
     private int third  = 2;
 
-    public ColorComparator(int shift) {
-        this.shift = shift;
-    }
-
-    public ColorComparator() {}
 
     private void setOrderFromString(String order) {
         // XXX Kludge to assure order is at least 3 characters long

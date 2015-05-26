@@ -10,6 +10,8 @@ import java.util.*;
  */
 public class GenericAlgorithm extends Algorithm {
     final static boolean NEG_WEIGHTING = true;
+    final static boolean CENTER_WEIGHTING = true;
+    final static boolean ANTI_CENTER_WEIGHTING = false;
 
     ColorMetric distFunction; //= new ColorDistanceMetrics.cosineSqRGBDist();
 //    NeighborPreference pref;
@@ -21,22 +23,23 @@ public class GenericAlgorithm extends Algorithm {
 
     @Override
     public String getName() {
-        return distFunction.getName();// + "-" + pref.getName();
+        String ret = distFunction.getName();
+        if (NEG_WEIGHTING) ret += "-LnQd";
+        if (CENTER_WEIGHTING) ret += "-Cent";
+        if (ANTI_CENTER_WEIGHTING) ret += "-Dispersed";
+        return ret;
     }
 
     @Override
     protected Pixel placeImpl(Color c) throws Exception {
         // Queue
-        Queue<Integer> st = new ArrayDeque<Integer>();
+        Queue<Integer> st = new ArrayDeque<>();
         // Stack
         com.company.Stack<Integer> undoStack = new DequeStack<>();
 
         int bestDiff = Integer.MAX_VALUE;
         Pixel bestPixel = null;
         int bestBlock = -1;
-
-        int count = 0;
-
 
         // Truncate color channels to the lowest log2(blockMask) digits
         // These digits are shared by all colors in the current block
@@ -51,7 +54,6 @@ public class GenericAlgorithm extends Algorithm {
                 rounded.getBlue() * bOffset);
 
         while (st.size() > 0) {
-            count++;
             int coord = st.remove();
             undoStack.push(coord);
 
@@ -89,15 +91,10 @@ public class GenericAlgorithm extends Algorithm {
 
             Color closest = new Color(closestR, closestG, closestB);
 
-            int dr = closest.getRed() - c.getRed();
-            int dg = closest.getGreen() - c.getGreen();
-            int db = closest.getBlue() - c.getBlue();
-//            int diff = dr * dr + dg * dg + db * db;
             int diff = (int)distFunction.dist(closest, c);
 
             if (diff > bestDiff) continue;
 
-            // TODO comment these more coherently
             // If color channel is greater than zero and haven't
             // visited the left-bordering color block,
             // then add the block to queue
@@ -114,7 +111,6 @@ public class GenericAlgorithm extends Algorithm {
                 st.add(coord - bOffset);
             }
 
-            // TODO comment these more coherently
             // If color channel is less than blockMask and haven't
             // visited the right-bordering color block,
             // then add the block to queue
@@ -136,13 +132,16 @@ public class GenericAlgorithm extends Algorithm {
             ArrayList<Pixel> pxl = pixelBlocks[coord];
             for (Pixel p : pxl){
                 Color avg = p.avg;
-                int rDist    = avg.getRed() - c.getRed();
-                int gDist    = avg.getGreen() - c.getGreen();
-                int bDist    = avg.getBlue() - c.getBlue();
                 diff = (int)distFunction.dist(avg, c);
 
                 if (NEG_WEIGHTING){
                     diff -= p.nonEmptyNeigh*p.nonEmptyNeigh;
+                }
+                if (CENTER_WEIGHTING){
+                    diff += Math.abs(p.xPos - Main.START_X) + Math.abs(p.yPos - Main.START_Y);
+                }
+                if (ANTI_CENTER_WEIGHTING){
+                    diff -= Math.abs(p.xPos - Main.START_X) + Math.abs(p.yPos - Main.START_Y);
                 }
 
                 // This has to wait on lambda functions, I can't come up with a fast enough method otherwise

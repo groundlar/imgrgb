@@ -18,16 +18,16 @@ public class Main {
      *  128 : 2048 x 1024
      *  64 : 512 x 512
      */
-//    final static int NUM_COLORS = 64;
-    final static int NUM_COLORS = 128;
+    final static int NUM_COLORS = 64;
+//    final static int NUM_COLORS = 128;
     final static int MAX_COLORS = 256;
-//    public final static int WIDTH  = 512;
-//    public final static int HEIGHT = 512;
-    public final static int WIDTH  = 2048;
-    public final static int HEIGHT = 1024;
+    public final static int WIDTH  = 1024;
+    public final static int HEIGHT = 256;
+//    public final static int WIDTH  = 2048;
+//    public final static int HEIGHT = 1024;
     // Starting coordinates for first pixel
-    public final static int START_X = WIDTH / 2 - 1;
-    public final static int START_Y = HEIGHT / 2 - 1;
+    public final static int START_X = WIDTH / 3 - 1;
+    public final static int START_Y = HEIGHT / 4 - 1;
 
     public final static int SEED = 200;//new Random().nextInt();
 
@@ -36,10 +36,11 @@ public class Main {
 
     private final static String WEIGHTING_NAME = "-LnQd";
 
-    private final static int NUM_FRAMES = 3;
+    private final static int NUM_FRAMES = 50;
 
-    //private static Comparer SORTER = new ColorComparator("gbr");
-    private static Comparer SORTER = new HueComparator();
+    private static Comparer SORTER = new ColorComparator("grb");
+//    private static Comparer SORTER = new HueComparator();
+
 
     /*
     private static NeighborDistanceAlgorithm.neighborMetric ngbhrMetric =
@@ -73,10 +74,6 @@ public class Main {
         return img;
     }
 
-    public static void saveImgToFile(BufferedImage img, String suffix) {
-        saveImgToFile(img, suffix, false);
-    }
-
     public static String getFileBasename(){
         return "imgrgb_" + ALGORITHM.getName() +
                 "_" + SORTER.getName() + "_" +
@@ -103,6 +100,10 @@ public class Main {
 
     public static String getOutputFilename(String suffix){
         return getOutputDirectory() + "img-" + suffix + ".png";
+    }
+
+    public static void saveImgToFile(BufferedImage img, String suffix) {
+        saveImgToFile(img, suffix, false);
     }
 
     public static void saveImgToFile(BufferedImage img,
@@ -191,12 +192,12 @@ public class Main {
         for (int i = 0; i < NUM_FRAMES; i++) {
             checkpoints[i] = (((long)(i+1)) * colors.length / NUM_FRAMES);
         }
-        System.out.println("Assigning colors...");
 
         System.out.println("Creating output directory...");
         if (!makeDirectory(getOutputDirectory())) {
             throw new FileAlreadyExistsException(getOutputDirectory());
         }
+
 
         System.out.println("Assigning colors...");
         for (int i = 0; i < colors.length; i++) {

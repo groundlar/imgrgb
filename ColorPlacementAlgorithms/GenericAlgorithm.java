@@ -10,8 +10,9 @@ import java.util.*;
  */
 public class GenericAlgorithm extends Algorithm {
     final static boolean NEG_WEIGHTING = true;
-    final static boolean CENTER_WEIGHTING = true;
+    final static boolean CENTER_WEIGHTING = false;
     final static boolean ANTI_CENTER_WEIGHTING = false;
+    final static int LOC_SCALING = 128; // Empirical constant
 
     ColorMetric distFunction; //= new ColorDistanceMetrics.cosineSqRGBDist();
 //    NeighborPreference pref;
@@ -25,9 +26,9 @@ public class GenericAlgorithm extends Algorithm {
     public String getName() {
         String ret = distFunction.getName();
         if (NEG_WEIGHTING) ret += "-LnQd";
-        if (CENTER_WEIGHTING) ret += "-Cent";
-        if (ANTI_CENTER_WEIGHTING) ret += "-Dispersed";
-        return ret;
+        if (CENTER_WEIGHTING) ret += "-Cent" + LOC_SCALING;
+        if (ANTI_CENTER_WEIGHTING) ret += "-Dispersed" + LOC_SCALING;
+        return ret + super.getName();
     }
 
     @Override
@@ -38,6 +39,7 @@ public class GenericAlgorithm extends Algorithm {
         com.company.Stack<Integer> undoStack = new DequeStack<>();
 
         int bestDiff = Integer.MAX_VALUE;
+        float lastShift = 0;
         Pixel bestPixel = null;
         int bestBlock = -1;
 
@@ -134,15 +136,43 @@ public class GenericAlgorithm extends Algorithm {
                 Color avg = p.avg;
                 diff = (int)distFunction.dist(avg, c);
 
+                lastShift = 0;
                 if (NEG_WEIGHTING){
-                    diff -= p.nonEmptyNeigh*p.nonEmptyNeigh;
+                    // max of 64 : 8 possible neighbors
+                    lastShift -= p.nonEmptyNeigh*p.nonEmptyNeigh;
                 }
                 if (CENTER_WEIGHTING){
-                    diff += Math.abs(p.xPos - Main.START_X) + Math.abs(p.yPos - Main.START_Y);
+                    // max of WIDTH + HEIGHT - xPos - yPos
+                    int maxDist = 0;
+                    if (p.xPos < (Main.WIDTH / 2)) {
+                        maxDist += Main.WIDTH - p.xPos;
+                    } else {
+                        maxDist += p.xPos;
+                    }
+                    if (p.yPos < (Main.HEIGHT / 2)) {
+                        maxDist += Main.HEIGHT - p.yPos;
+                    } else {
+                        maxDist += p.yPos;
+                    }
+                    float shift = Math.abs(p.xPos - Main.START_X) + Math.abs(p.yPos - Main.START_Y);
+                    lastShift += (shift / maxDist) * LOC_SCALING;
                 }
                 if (ANTI_CENTER_WEIGHTING){
-                    diff -= Math.abs(p.xPos - Main.START_X) + Math.abs(p.yPos - Main.START_Y);
+                    int maxDist = 0;
+                    if (Main.START_X < (Main.WIDTH / 2)) {
+                        maxDist += Main.WIDTH - Main.START_X;
+                    } else {
+                        maxDist += Main.START_X;
+                    }
+                    if (Main.START_Y < (Main.HEIGHT / 2)) {
+                        maxDist += Main.HEIGHT - Main.START_Y;
+                    } else {
+                        maxDist += Main.START_Y;
+                    }
+                    float shift = Math.abs(p.xPos - Main.START_X) + Math.abs(p.yPos - Main.START_Y);
+                    lastShift -= (shift / maxDist) * LOC_SCALING;
                 }
+                diff += lastShift;
 
                 // This has to wait on lambda functions, I can't come up with a fast enough method otherwise
 //                diff = (int)pref.calculate(diff, p.nonEmptyNeigh);

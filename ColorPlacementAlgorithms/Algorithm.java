@@ -26,10 +26,15 @@ public abstract class Algorithm {
     final int gOffset = blockSize;
     final int bOffset = 1;
 
-    boolean addedFirst = false;
-    boolean[] pixelBlocksVisited = new boolean[arrayDim];
+    final int SEED_NUM = 2;
+    final int MULT_SEED_DELAY = (Main.HEIGHT * Main.WIDTH) / 5;
 
-    public abstract String getName();
+    boolean[] pixelBlocksVisited = new boolean[arrayDim];
+    static long pixelsAdded = 0;
+
+    public String getName() {
+        return SEED_NUM + "seeds" + String.format("%05d", MULT_SEED_DELAY) + "d";
+    };
 
     public void init(int width, int height){
         for (int r = 0; r < blockSize; r++) {
@@ -49,9 +54,10 @@ public abstract class Algorithm {
     public void place(Color c) throws Exception {
         // find next coordinates in image
         Pixel p;
-        if (!addedFirst) {
-            addedFirst = true;
+        if (pixelsAdded==0) {
             p = Main.Image[Main.START_Y * Main.WIDTH + Main.START_X];
+        } else if (pixelsAdded==MULT_SEED_DELAY){
+            p = Main.Image[(Main.START_Y + Main.HEIGHT/2)* Main.WIDTH + Main.START_X + Main.WIDTH/3];
         } else {
             p = placeImpl(c);
         }
@@ -60,6 +66,7 @@ public abstract class Algorithm {
         p.isEmpty = false;
         p.color = c;
 
+        pixelsAdded++;
         changeQueue(p);
     }
 

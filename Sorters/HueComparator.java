@@ -20,7 +20,7 @@ public class HueComparator implements Comparer<Color> {
     }
 
     public String getName() {
-        return "hueComparator3b";
+        return "HSBComp";
     }
 
     @Override

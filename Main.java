@@ -61,6 +61,7 @@ public class Main {
 
     private static Algorithm ALGORITHM = new GenericAlgorithm(algoMetric);
 
+    // TODO move these functions to FileUtility class or some such class
     static BufferedImage exportImg(Pixel[] Image, BufferedImage img){
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
@@ -93,6 +94,7 @@ public class Main {
         }
     }
 
+    // TODO make this generic
     public static String getOutputDirectory(){
         String basename = getFileBasename();
         return "/home/sky/Desktop/" + basename + "/";

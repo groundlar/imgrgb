@@ -11,6 +11,11 @@ import java.awt.*;
 public class HueComparator implements Comparer<Color> {
     private int shift;
 
+    /**
+     * Initializes a HueComparator, using an integer shift for sorting, allowing arbitrary
+     * definition of the value 0 color.
+     * @param shift
+     */
     public HueComparator(int shift) {
         this.shift = shift;
     }
@@ -23,6 +28,16 @@ public class HueComparator implements Comparer<Color> {
         return "HSBComp";
     }
 
+    /**
+     * Compares two colors according to the initialized order during
+     * E.g. assuming initialization with 'RGB', the values are first sorted by
+     * hue, then saturation, then brightness, in the event of primary value
+     * collisions.
+     *
+     * @param c1
+     * @param c2
+     * @return -1, 0, or 1
+     */
     @Override
     public int compare(Color c1, Color c2) {
         float[] hsb1 = new float[3];

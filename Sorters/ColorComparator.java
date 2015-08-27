@@ -16,8 +16,16 @@ public class ColorComparator implements Comparer<Color> {
     private int third  = 2;
 
 
+    /**
+     * Sets the sorting weights from a passed string,
+     * e.g. 'RGB' would prefer red to green, and both to blue.
+     * Any characters outside rRgGbB are considered bad input,
+     * and behavior should be considered undefined.
+     *
+     * @param order string detailing order for R, G, B values to be considered
+     */
     private void setOrderFromString(String order) {
-        // XXX Kludge to assure order is at least 3 characters long
+        // XXX Assure order is at least 3 characters long
         order = order + "000";
         int[] numOrder = new int[3];
         for (int i = 0; i < 3; i++) {
@@ -59,6 +67,15 @@ public class ColorComparator implements Comparer<Color> {
                 nameMap.get(third);
     }
 
+    /**
+     * Compares two colors according to the initialized order during {@link #setOrderFromString(String) setOrderFromString()}.
+     * E.g. assuming initialization with 'RGB', the values are first sorted by
+     * (R / (G + B)), then by (G / B) in the event of equal primary values.
+     *
+     * @param c1
+     * @param c2
+     * @return -1, 0, or 1
+     */
     @Override
     public int compare(Color c1, Color c2) {
         int[] c1RGB = {c1.getRed(), c1.getGreen(), c1.getBlue()};
